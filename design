@@ -1,0 +1,21 @@
+Design document for game
+
+The goal is to be as flexible/moddable as possible, and focus on providing a framework that makes it easy to design space games.
+
+Nomenclature:
+A rule is defined as the smallest possible description of logic in the game. "Every object with mass is affected by Newtonian gravity" is a rule; so is "Ships can have shields." The set of all rules in effect during a game is the ruleset of that game. The set of all defined rules is the rulebook. Rules are grouped into broad categories, which correspond to systems implemented in ECS systems. 
+
+Rule ID:
+Rules are referred to by an id in user-facing applications. Categories are each assigned a unique sequence of letters e.g. "A: Meta Rules," "B: Scenario Rules," "PHY: Physics" etc. Major subcategories of rules are each given a number e.g. "B1: Spacial Dimensions," "PHY23: Solar Sails" etc. Further sub-categorization is provided by numbers separated by periods, e.g. "PHY23.7.2: Torque on damaged solar sails." A rule may have a few optional variations; each variation is labelled with the id of the base rule followed by lowercase letters, e.g. "PHY2.1: Gravity Model" and "PHY2.1a: Pure Newtonian" vs. "PHY2.1b: Softened Newtonian." Generally, rules should not have an option "None," in this case just deactivate the rule. 
+
+Rule Compatibility:
+Since rules can describe behavior in the engine, care must be taken so they don't interfere with each other. In order for a rule to be active, all parent rules
+
+
+
+
+
+
+Rules:
+A: Meta
+Check for priority loops in rulebook, i.e. make sure Rule 1 > Rule 2 > Rule 3 > Rule 1 cannot happen
