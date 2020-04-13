@@ -1,0 +1,14 @@
+name = "prototype_mod"
+
+author = "mod author"
+version = "1.0.1"
+website = "www.example.com"
+
+
+[rules.G.21.1a]
+summary = "A short rule summary"
+description = "A detailed rule description"
+code = "script_path:function_name"
+dependencies = ["rules.G.21.3"]
+priority = ["rules.G.21.3", "rules.G.21.4", "rules.PHY.3.37.1"]
+conflict = ["rules.G.21.1b","rules.G.21.1c", rules.PHY.3.37.2"]
