@@ -1,21 +1,156 @@
-Design document for game
+Systems:
+Physics
+Gravity
+Graphics
+Sound
+Ship Control
+Ship Systems
+UI
 
-The goal is to be as flexible/moddable as possible, and focus on providing a framework that makes it easy to design space games.
-
-Nomenclature:
-A rule is defined as the smallest possible description of logic in the game. "Every object with mass is affected by Newtonian gravity" is a rule; so is "Ships can have shields." The set of all rules in effect during a game is the ruleset of that game. The set of all defined rules is the rulebook. Rules are grouped into broad categories, which correspond to systems implemented in ECS systems. 
-
-Rule ID:
-Rules are referred to by an id in user-facing applications. Categories are each assigned a unique sequence of letters e.g. "A: Meta Rules," "B: Scenario Rules," "PHY: Physics" etc. Major subcategories of rules are each given a number e.g. "B1: Spacial Dimensions," "PHY23: Solar Sails" etc. Further sub-categorization is provided by numbers separated by periods, e.g. "PHY23.7.2: Torque on damaged solar sails." A rule may have a few optional variations; each variation is labelled with the id of the base rule followed by lowercase letters, e.g. "PHY2.1: Gravity Model" and "PHY2.1a: Pure Newtonian" vs. "PHY2.1b: Softened Newtonian." Generally, rules should not have an option "None," in this case just deactivate the rule. 
-
-Rule Compatibility:
-Since rules can describe behavior in the engine, care must be taken so they don't interfere with each other. In order for a rule to be active, all parent rules
-
-
-
-
+States:
+First Person
+Pause/Menu Screen
+Loading Screen
+Overlay Mode
 
 
-Rules:
-A: Meta
-Check for priority loops in rulebook, i.e. make sure Rule 1 > Rule 2 > Rule 3 > Rule 1 cannot happen
+Starry Background
+Cockpit
+Ships
+Guns
+Controls
+
+Components:
+kinematic_comp
+gravity_comp
+cockpit_comp
+skybox_comp
+
+Input:
+Roll/pitch/yaw
+translate x/y/z
+fire
+
+Assets:
+Cockpit
+Laser beams
+Ship
+Skybox
+
+Prefabs:
+Ships
+Skybox
+
+
+
+
+Invariants over rulesets:
+Games will always have physics; i.e., no ruleset will have alternating player
+turns. SFB-style simultaneous turns are fine, but will be implemented as players
+making decisions while the physics are paused, then running physics for a set
+amount of time before the next "turn."
+
+Games will always consist of very small active entities engaging each other at
+large distances, with lots of empty space in between. Big objects like stars and
+planets can exist, but will always be on rails; i.e., they will not be simulated
+in the differential equation solver of the physics engine. Small objects cannot
+influence each other via gravity or other force interactions; these interactions
+will always be between big objects/terrain and little objects to solve the n^2
+problem. Group small objects that are within close range together into clusters
+that have large spacing between them.
+
+Players need to have access to a map
+
+When possible, use SI units
+
+
+Ideas:
+No 3rd person perspective, only optional 1st person and map view
+Physics
+    X3, Newtonian, 4D, Relativistic
+Space Grids
+    None, Rectangular/Cuboid, Hexagonal
+Automatic spacecraft control/swarming/formation flying
+    HW, X3
+Navigation
+    Micro-autopilot: specify final state space and autopilot will fly you there
+    HW, SFB
+Combat
+    HW, X3, SFB
+    Variety of scales/lethality
+    Lasers/Phasers (instant/direct fire)
+    Dumbfire Projectiles
+    Seeking/Guided Projectiles
+    Mines
+    No player targeting/accuracy in map view; if no first person view, then hits
+    are rolled based on probability. If there is first person view, all aiming
+    is done in first person, let the AI do aiming otherwise
+    Machine learning targeting
+Armor/shields
+    SFB
+Transporters
+    SFB
+FTL travel
+    SFB, BSG/SE/HW, X3
+Tractor beams
+Ship pressurization
+    SE, SFB
+Ship power
+    Factorio, SFB
+Resource mining/processing
+Ship design/construction
+Mini creative mode in survival mode for designing ships
+    CAD model editor
+Ships are templates
+Ship speed/maneuverability/firepower/armor/stealth tradeoffs
+Communication range, stealthy flying
+Factorio-like power, production, repair overlays
+Factorio-like inventory
+Rendering
+Realistic/Arcade sound
+    SE
+Stations
+    If an object is heavy enough and its future inert path is closed, can
+    convert it to a station, putting it on rails
+
+
+Inspirations:
+Star trek/SFB
+Battlestar Galactica
+Space Engineers
+Factorio
+Homeworld
+Starcraft
+X3:TC
+Descent
+Dominion
+CAD
+
+
+SFB Rules:
+A: General Rules
+B: How To Play
+C: Movement
+D: Combat
+E: Direct-Fire Weapons
+F: Seeking Weapons
+FD: Drones
+FP: Plasma Torpedoes
+G: Ship Systems
+H: Power Systems
+J: Shuttlecraft
+M: Mine Warfare
+P: Terrain
+Q: Sublight Battles
+R: Races, Background, and Starship Data
+S: Scenarios
+SG: General Scenarios
+SH: Historical Scenarios
+SM: Monster Scenarios
+T: Mini-Campaigns
+U: Campaign Games
+V: Operational Movement
+W: Minatures Rules
+X: Advanced Technology
+Y: Early Years
+Z: Designer's Notes, Publisher's Information

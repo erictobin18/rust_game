@@ -71,7 +71,7 @@ impl<'s> System<'s> for GravitySystem {
             let vy0 = dy/dt;
             let vz0 = dz/dt;
 
-            comps[i].velocity.set_xyz(vx0, vy0, vz0);
+            comps[i].velocity.set_translation_xyz(vx0, vy0, vz0);
 
             let dvx = yf[7*i + 3] - vx0;
             let dvy = yf[7*i + 4] - vy0;
@@ -80,7 +80,7 @@ impl<'s> System<'s> for GravitySystem {
             let ay0 = dvy/dt;
             let az0 = dvz/dt;
             
-            comps[i].acceleration.set_xyz(ax0, ay0, az0);
+            comps[i].acceleration.set_translation_xyz(ax0, ay0, az0);
            
         }
         // for i in 0..n {

@@ -31,7 +31,7 @@ impl<'s> System<'s> for PhysicsSystem {
             let acc = kine.acceleration.clone();
             *kine.position.translation_mut() += vel.translation()*dt;
             *kine.velocity.translation_mut() += acc.translation()*dt;
-            kine.acceleration.set_xyz(0.0, 0.0, 0.0);
+            kine.acceleration.set_translation_xyz(0.0, 0.0, 0.0);
 
             // println!("{:?}", kine.position.translation());
             // println!("{:?}", kine.velocity.translation());
@@ -39,7 +39,7 @@ impl<'s> System<'s> for PhysicsSystem {
         }
 
         for (k, t) in (&kine_comps, &mut transforms).join() {
-            *t = k.position.clone();
+            *t.translation_mut() = k.position.translation().clone();
         }
         // println!("\n\n\n\n");
 
