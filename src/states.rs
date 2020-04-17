@@ -1,11 +1,13 @@
 use amethyst::assets::{AssetStorage, Loader, Handle};
-use amethyst::core::transform::Transform;
+use amethyst::core::{transform::Transform, ArcThreadPool};
 use amethyst::ecs::prelude::{Component, DenseVecStorage};
 use amethyst::prelude::*;
 use amethyst::renderer::{
     Camera, ImageFormat, camera::Projection, SpriteRender, SpriteSheet,
     SpriteSheetFormat, sprite::SpriteSheetHandle, Texture,
 };
+
+use amethyst::ecs::{Dispatcher, DispatcherBuilder};
 
 use crate::ecs::kinematic_comp::KinematicComponent;
 use crate::ecs::gravity_comp::GravityComponent;
@@ -14,14 +16,59 @@ pub const ARENA_HEIGHT: f32 = 100.0;
 pub const ARENA_WIDTH: f32 = 100.0;
 
 
-pub struct Simulate;
+use crate::ecs::PhysicsSystem;
 
-impl SimpleState for Simulate {
-    
+#[derive(PartialEq, Debug)]
+pub enum PhysicsStatus {
+    Running,
+    Paused,
+}
+
+impl Default for PhysicsStatus {
+    fn default() -> Self {
+	PhysicsStatus::Paused
+    }
+}
+
+// States:
+// Load
+// First Person
+// Overlay
+// Pause
+
+// Loading Screen
+pub struct Load<'a, 'b> {
+    dispatcher: Option<Dispatcher<'a, 'b>>,
+}
+
+impl<'a, 'b> Load<'a, 'b> {
+    pub fn new() -> Self {
+	Self {
+	    dispatcher: Some(DispatcherBuilder::new().build()),
+	}
+    }
+}
+
+impl<'a, 'b> SimpleState for Load<'a, 'b> {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
-        println!("Hello World!");
-
+	println!("Load Mode");
+	// load prefabs, create all entities
+	println!("Hello World!");
         let world = data.world;
+
+	// Create Dispatcher
+	let mut dispatcher_builder = DispatcherBuilder::new();
+
+	let mut dispatcher = dispatcher_builder
+	    .with_pool((*world.read_resource::<ArcThreadPool>()).clone())
+	    .build();
+	dispatcher.setup(world);
+
+	self.dispatcher = Some(dispatcher);
+
+	// Create a resource to pause physics
+	let physics_running = PhysicsStatus::default();
+	world.insert(physics_running);
 
         // Load the spritesheet necessary to render the graphics.
         let sprite_sheet_handle = load_sprite_sheet(world);
@@ -29,6 +76,110 @@ impl SimpleState for Simulate {
         world.register::<KinematicComponent>();
         initialize_asteroids(world, sprite_sheet_handle);        
         initialize_camera(world);
+    }
+
+    fn update(&mut self, data: &mut StateData<GameData>) -> SimpleTrans {
+	if let Some(dispatcher) = self.dispatcher.as_mut() {
+	    dispatcher.dispatch(&data.world);
+	}
+	let world = &data.world;
+
+	let fetched = world.try_fetch::<PhysicsStatus>();
+	if let Some(fetched_resource) = fetched {
+	    println!("{:?}", *fetched_resource);
+	}
+
+	Trans::Replace(Box::new(Overlay::new()))
+    }
+}
+
+// Draw an informational overlay
+pub struct Overlay<'a, 'b> {
+    dispatcher: Option<Dispatcher<'a, 'b>>,
+}
+
+impl<'a, 'b> Overlay<'a, 'b> {
+    pub fn new() -> Self {
+	Self {
+	    dispatcher: Some(DispatcherBuilder::new().build()),
+	}
+    }
+}
+
+impl<'a, 'b> SimpleState for Overlay<'a, 'b> {
+    fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
+	println!("Overlay Mode");
+        let world = data.world;
+ 
+	// Create Dispatcher
+	let mut dispatcher_builder = DispatcherBuilder::new();
+	dispatcher_builder
+	    .add(PhysicsSystem.pausable(PhysicsStatus::Running),
+		 "physics_system", &[]);
+
+	let mut dispatcher = dispatcher_builder
+	    .with_pool((*world.read_resource::<ArcThreadPool>()).clone())
+	    .build();
+	dispatcher.setup(world);
+
+	self.dispatcher = Some(dispatcher);
+    }
+
+    fn update(&mut self, data: &mut StateData<GameData>) -> SimpleTrans {
+	if let Some(dispatcher) = self.dispatcher.as_mut() {
+	    dispatcher.dispatch(&data.world);
+	}
+
+	Trans::None
+    }
+}
+
+// Control an entity from first-person
+pub struct FirstPerson<'a, 'b> {
+    dispatcher: Option<Dispatcher<'a, 'b>>,
+}
+
+impl<'a, 'b> FirstPerson<'a, 'b> {
+    pub fn new() -> Self {
+	Self {
+	    dispatcher: Some(DispatcherBuilder::new().build()),
+	}
+    }
+}
+
+impl<'a, 'b> SimpleState for FirstPerson<'a, 'b> {
+    fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
+	println!("First Person Mode");
+        let world = data.world;
+ 
+	// Create Dispatcher
+	let mut dispatcher_builder = DispatcherBuilder::new();
+	dispatcher_builder
+	    .add(PhysicsSystem, "physics_system", &[]);
+
+	let mut dispatcher = dispatcher_builder
+	    .with_pool((*world.read_resource::<ArcThreadPool>()).clone())
+	    .build();
+	dispatcher.setup(world);
+
+	self.dispatcher = Some(dispatcher);
+    }
+
+    fn update(&mut self, data: &mut StateData<GameData>) -> SimpleTrans {
+	if let Some(dispatcher) = self.dispatcher.as_mut() {
+	    dispatcher.dispatch(&data.world);
+	}
+
+	Trans::None
+    }
+}
+
+// Pause Game
+pub struct Pause;
+
+impl SimpleState for Pause {
+    fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
+	println!("Pause Mode");
     }
 }
 

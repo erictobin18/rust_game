@@ -135,7 +135,9 @@ pub fn rk45(f:&Fn(Vec<f32>) ->  Vec<f32>, y0:Vec<f32>, tf:f32) -> Vec<f32> {
         // yn = step*(b1*k1 + b2*k2 + b3*k3 + b4*k4 + b5*k5 + b6*k6 + b7*k7);
         // t += step;
     }
-    println!("Finished solver with {} steps", step_num + 1);
+    if verbose {
+	println!("Finished solver with {} steps", step_num + 1);
+    }
     // println!("Final Vector: {:?}", yn);
     yn
 }

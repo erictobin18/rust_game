@@ -1,3 +1,4 @@
+################################################################################
 Systems:
 Physics
 Gravity
@@ -8,23 +9,23 @@ Ship Systems
 UI
 
 States:
-First Person
-Pause/Menu Screen
 Loading Screen
 Overlay Mode
-
+First Person
+Pause/Menu Screen
 
 Starry Background
 Cockpit
 Ships
 Guns
 Controls
+Star
 
 Components:
 kinematic_comp
 gravity_comp
 cockpit_comp
-skybox_comp
+background_comp
 
 Input:
 Roll/pitch/yaw
@@ -36,10 +37,14 @@ Cockpit
 Laser beams
 Ship
 Skybox
+Star
 
 Prefabs:
 Ships
 Skybox
+Star
+
+
 
 
 

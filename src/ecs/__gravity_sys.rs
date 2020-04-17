@@ -8,7 +8,6 @@ use amethyst::{
 use crate::ecs::kinematic_comp::KinematicComponent;
 use crate::ecs::gravity_comp::GravityComponent;
 
-
 const GRAVITATION_CONSTANT:f32 = 1E-6;
 const TIMESTEP_MIN:f32 = 1E-9;
 
@@ -23,9 +22,9 @@ impl<'s> System<'s> for GravitySystem {
         Read<'s, Time>,
     );
     fn run(&mut self, (grav_comps, mut kine_comps, time): Self::SystemData) {
-        println!("RUNNING GRAVITY SYSTEM");
+        // println!("RUNNING GRAVITY SYSTEM");
         let dt = time.delta_seconds();
-        println!("dt: {}",dt);
+        // println!("dt: {}",dt);
         if dt < TIMESTEP_MIN { return }
         
         let mut comps:Vec<_> = (&mut kine_comps)
@@ -58,7 +57,7 @@ impl<'s> System<'s> for GravitySystem {
         
         // println!("Vector sent to solver: {:?}", y0);
         let yf = rk45(&compute_gravity, y0, dt);
-        println!("Solver returned: {:?}", yf);
+        // println!("Solver returned: {:?}", yf);
         
         // change the kine_comps so that the physics system will compute the
         // correct final state at the end of the frame
