@@ -1,8 +1,8 @@
 (
     axes: {
         "strafe_vertical": Emulated(pos: Key(LShift), neg: Key(Space)),
-	"strafe_horizonal": Emulated(pos: Key(D), neg: Key(A)),
-	"strafe_normal": Emulated(pos: Key(W), neg: Key(S)),
+	"strafe_horizontal": Emulated(pos: Key(D), neg: Key(A)),
+	"strafe_normal": Emulated(pos: Key(S), neg: Key(W)),
 	"roll": Emulated(pos: Key(E), neg: Key(Q))
     },
     actions: {

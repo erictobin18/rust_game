@@ -7,9 +7,9 @@ use amethyst::renderer::{
     plugins::{RenderFlat2D, RenderToWindow},
     types::DefaultBackend,
     RenderingBundle};
-use amethyst::utils::application_root_dir;
-
-use amethyst::input::{InputBundle, StringBindings};
+use amethyst::utils::{application_root_dir, auto_fov::AutoFovSystem};
+use amethyst::input::{InputBundle, StringBindings, Bindings, Axis, Button};
+use amethyst::controls::FlyControlBundle;
 
 mod states;
 use crate::states::Load;
@@ -38,19 +38,32 @@ fn main() -> amethyst::Result<()> {
 	.join("bindings.ron");
     let assets_dir = app_root.join("assets");  
     
-    let game_data =
-        GameDataBuilder::default()
+    let game_data = GameDataBuilder::default()
+	.with(PhysicsSystem, "physics_system", &[])
+	.with(AutoFovSystem::default(), "auto_fov", &[])
 	.with_bundle(InputBundle::<StringBindings>::new()
 		     .with_bindings_from_file(bindings_config)?)?
-        .with_bundle(RenderingBundle::<DefaultBackend>::new()
+	.with_bundle(
+            FlyControlBundle::<StringBindings>::new(
+                Some("strafe_horizontal".into()),
+                Some("strafe_vertical".into()),
+                Some("strafe_normal".into()),
+            )
+            .with_sensitivity(0.1, 0.1)
+            .with_speed(5.),
+        )?
+        .with_bundle(TransformBundle::new().with_dep(&[
+	    "physics_system",
+	    "fly_movement",
+	]))?
+	.with_bundle(RenderingBundle::<DefaultBackend>::new()
 		     .with_plugin(
 			 RenderToWindow::from_config_path(display_config_path)?
 			     .with_clear([0.0,0.0,0.0,1.0]),
 		     )
 		     .with_plugin(RenderFlat2D::default()),
-        )?
-        .with_bundle(TransformBundle::new())?
-        .with(PhysicsSystem, "physics_system", &[]);
+        )?;
+
     let mut game = Application::new(assets_dir, Load::new(), game_data)?;
 
     game.run();

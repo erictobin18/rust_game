@@ -1,13 +1,20 @@
-use amethyst::assets::{AssetStorage, Loader, Handle};
 use amethyst::core::{transform::Transform, ArcThreadPool};
-use amethyst::ecs::prelude::{Component, DenseVecStorage};
+use amethyst::ecs::Entity;
+use amethyst::Error;
 use amethyst::prelude::*;
 use amethyst::renderer::{
     Camera, ImageFormat, camera::Projection, SpriteRender, SpriteSheet,
     SpriteSheetFormat, sprite::SpriteSheetHandle, Texture,
+    debug_drawing::DebugLines, camera::ActiveCamera,
 };
+use amethyst::derive::PrefabData;
+use amethyst::assets::{AssetStorage, Loader, Handle, PrefabData,
+		       ProgressCounter};
+use amethyst::controls::FlyControlTag;
+use amethyst::utils::auto_fov::AutoFov;
 
 use amethyst::ecs::{Dispatcher, DispatcherBuilder};
+use serde::{Serialize, Deserialize};
 
 use crate::ecs::kinematic_comp::KinematicComponent;
 use crate::ecs::gravity_comp::GravityComponent;
@@ -185,19 +192,31 @@ impl SimpleState for Pause {
 
 fn initialize_camera(world: &mut World) {
     let mut transform = Transform::default();
-    transform.set_translation_z(1.0);
-    
-    world
-        .create_entity()
-        .with(Camera::standard_2d(ARENA_WIDTH, ARENA_HEIGHT))
-        .with(transform)
-        .build();
+    transform.set_translation_xyz(0.0, 4.0, 8.0);
+
+    let mut auto_fov = AutoFov::default();
+    auto_fov.set_base_fovx(std::f32::consts::FRAC_PI_3);
+    auto_fov.set_base_aspect_ratio(1,1);
+
+    let camera = world
+	.create_entity()
+	.with(Camera::standard_3d(16.0, 9.0))
+	.with(auto_fov)
+	.with(transform)
+	.with(FlyControlTag)
+	.build();
+
+    world.insert(ActiveCamera {
+	entity: Some(camera),
+    });
+    world.insert(DebugLines::new());    
 }
 
 fn initialize_asteroids(world: &mut World,
 			sprite_sheet_handle: SpriteSheetHandle) {
     let ast_1_transform = Transform::default();
     let ast_2_transform = Transform::default();
+    let ast_3_transform = Transform::default();
 
     // ast_1_transform.set_xyz(10.0, 0.0, 0.0);
     // ast_2_transform.set_xyz(-10.0, 0.0, 0.0);
@@ -221,9 +240,21 @@ fn initialize_asteroids(world: &mut World,
     };
     ast_2_kinematic.position.set_translation_xyz(0.0, 0.0, 0.0);
     ast_2_kinematic.velocity.set_translation_xyz(0.0, 0.0, 0.0);
+
+    let mut ast_3_kinematic = KinematicComponent {
+        position: Transform::default(),
+        velocity: Transform::default(),
+        acceleration: Transform::default(),
+
+        m: 1.0,
+    };
+    ast_3_kinematic.position.set_translation_xyz(-20.0, 0.0, 0.0);
+    ast_3_kinematic.velocity.set_translation_xyz(0.0, 8.0, 0.0);
+
     
     let ast_1_gravity = GravityComponent{};
     let ast_2_gravity = GravityComponent{};
+    let ast_3_gravity = GravityComponent{};
 
     // Assign the sprites for the paddles
     let sprite_render = SpriteRender {
@@ -245,6 +276,14 @@ fn initialize_asteroids(world: &mut World,
         .with(ast_2_transform)
         .with(ast_2_kinematic)
         .with(ast_2_gravity)
+        .build();
+
+    world
+        .create_entity()
+        .with(sprite_render.clone())
+        .with(ast_3_transform)
+        .with(ast_3_kinematic)
+        .with(ast_3_gravity)
         .build();
 }
 
@@ -272,3 +311,10 @@ fn load_sprite_sheet(world: &mut World) -> Handle<SpriteSheet> {
         &sprite_sheet_store,
     )
 }    
+
+#[derive(Debug, Deserialize, Serialize, PrefabData)]
+pub struct Asteroid {
+    transform: Transform,
+    kinematic: KinematicComponent,
+    gravity: GravityComponent,
+}

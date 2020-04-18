@@ -1,0 +1,60 @@
+4/18/20
+Started devlog.
+
+This as-of-yet untitled game has an ambitious plan. I chose Rust to program in
+since I was tired of C++ stupidity and I really like the idea of the Rust
+language. This meant either programming from scratch, or using Amethyst. I
+already did a project where I set up my own ECS system, so this time I decided
+to leave the engine heavy-lifting to the pros and focus on the game
+development side of things.
+
+So far what I have implemented is not much more complicated than the Pong
+example in the book. It occurred to me that I was spending nearly all my time
+trying to understand how the Amethyst engine worked due to the lack of good
+examples similar to what I was trying to achieve, so it might be worth it to
+document my progress.
+
+Rather than paddles and a ball, this code draws a set of asteroids in
+space. These asteroids are affected by Newtonian gravity, so I implemented a
+simple differential equation solver using a Runge-Kutta 45 scheme. This
+essentially creates an "inner loop" in the physics engine that runs in the
+"outer" game loop provided by Amethyst. I admit to having no idea if this is
+the best way to structure this inside of Amethyst, but I am certain that an
+inner loop is required for accurate simulation of realistic physics. The
+solver essentially takes the state of the world in the previous frame, then
+steps time forward gradually until the time between frames has elapsed. It
+calculates how large this timestep can be based upon how quickly things in the
+physics engine are changing, and how intricately they are linked to each
+other. Some basic testing shows that the solver usually needs between 10-15
+timesteps during each frame for a handful of objects moving at reasonable
+speeds.
+
+I have defined a handful of states. One is for loading up the world and
+getting the physics engine ready to start. There are two gameplay states: the
+first is meant to represent a sort of "terminal" available to the player,
+showing a map and providing useful information; the second represents a
+first-person view, either from a person/astronaut or a ship's cockpit. The
+last state is a simple "pause" state that can be pushed over either of the two
+gameplay states.
+
+The current graphics are 2D like the pong example. The current task is to
+switch to 3D graphics with rendered shapes instead of sprites. I am primarly
+copying from the "rendy" example. This example uses a fly camera. I know the
+final game will not use a fly camera except for debug/admin/replay purposes,
+but I still would like to have it available. Currently, I have this working. The input bundle reads the bindings file, which lists some emulated axes using WASD and LShift and Space keys for moving the camera around. The FlyControl bundle automatically reads the mouse for pitch and yaw movement. Despite what the documentation says, setting it up this way actually does implement all the code necessary to create a working fly camera. As of now, there is no built-in way to control the roll of a fly camera. I created a forum post to complain about this.
+
+Next up is to get control of how the simulation looks. Here's a roadmap:
+1. I'd like to put in a nice skybox
+2. Make the central "asteroid" a star instead
+3. Change the remaining asteroids from sprites into rendered 3D objects (spheres, for now...).
+4. Create the code necessary to import models for spaceships.
+5. Create a camera for cockpit view for spaceships
+
+Some longer-term goals unrelated to looks:
+- basic collision physics
+- spaceship movement
+- simple lasers/projectiles
+- simple map view
+
+Note: turn off most of the stuff rendered in the rendy example by commenting lines {[139-151], 309, [351-358], [389-397], [419-442], [448-545]}.
+

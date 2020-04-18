@@ -1,7 +1,13 @@
-use amethyst::ecs::prelude::{Component, DenseVecStorage};
 use amethyst::core::transform::Transform;
+use amethyst::ecs::{Component, DenseVecStorage, WriteStorage, Entity};
+use amethyst::Error;
+use amethyst::derive::PrefabData;
+use amethyst::assets::PrefabData;
+use serde::{Serialize, Deserialize};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Component, Debug, Default)]
+#[derive(Deserialize, Serialize, PrefabData)]
+#[prefab(Component)]
 pub struct KinematicComponent {
     pub position:Transform,
     pub velocity:Transform,
@@ -10,6 +16,6 @@ pub struct KinematicComponent {
     pub m: f32,
 }
 
-impl Component for KinematicComponent {
-    type Storage = DenseVecStorage<Self>;
-}
+// impl Component for KinematicComponent {
+//     type Storage = DenseVecStorage<Self>;
+// }

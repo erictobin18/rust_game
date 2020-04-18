@@ -6,6 +6,8 @@ edition = "2018"
 
 [dependencies]
 amethyst = "0.15.0"
+serde = { version = "1.0.104", features = ["derive"] }
+winit = { version = "0.19", features = ["serde", "icon_loading"] }
 
 [features]
 vulkan = ["amethyst/vulkan"]

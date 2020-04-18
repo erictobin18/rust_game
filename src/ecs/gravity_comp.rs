@@ -1,13 +1,17 @@
-use amethyst::ecs::prelude::{Component, DenseVecStorage};
+use amethyst::ecs::{Component, DenseVecStorage, WriteStorage, Entity};
+use amethyst::Error;
+use amethyst::derive::PrefabData;
+use amethyst::assets::PrefabData;
+use serde::{Serialize, Deserialize};
 
-#[derive(Debug)]
-#[derive(Clone)]
+#[derive(Clone, Copy, Component, Debug, Default)]
+#[derive(Deserialize, Serialize, PrefabData)]
+#[prefab(Component)]
 pub struct GravityComponent {
     
-
 }
 
 
-impl Component for GravityComponent {
-    type Storage = DenseVecStorage<Self>;
-}
+// impl Component for GravityComponent {
+//     type Storage = DenseVecStorage<Self>;
+// }
