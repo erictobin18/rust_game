@@ -4,11 +4,13 @@ use amethyst::prelude::*;
 use amethyst::core::transform::TransformBundle;
 
 use amethyst::renderer::{
-    plugins::{RenderFlat2D, RenderToWindow},
+    plugins::{RenderFlat3D, RenderFlat2D, RenderToWindow, RenderDebugLines,
+	      RenderSkybox},
     types::DefaultBackend,
+    palette::Srgb,
     RenderingBundle};
 use amethyst::utils::{application_root_dir, auto_fov::AutoFovSystem};
-use amethyst::input::{InputBundle, StringBindings, Bindings, Axis, Button};
+use amethyst::input::{InputBundle, StringBindings};
 use amethyst::controls::FlyControlBundle;
 
 mod states;
@@ -19,7 +21,7 @@ use ecs::PhysicsSystem;
 
 mod diffeq;
 
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 
 fn exp(y: Vec<f32>) -> Vec<f32> {
     y
@@ -56,12 +58,16 @@ fn main() -> amethyst::Result<()> {
 	    "physics_system",
 	    "fly_movement",
 	]))?
-	.with_bundle(RenderingBundle::<DefaultBackend>::new()
-		     .with_plugin(
-			 RenderToWindow::from_config_path(display_config_path)?
-			     .with_clear([0.0,0.0,0.0,1.0]),
-		     )
-		     .with_plugin(RenderFlat2D::default()),
+	.with_bundle(
+            RenderingBundle::<DefaultBackend>::new()
+                .with_plugin(RenderToWindow::from_config_path(display_config_path)?)
+                .with_plugin(RenderFlat3D::default())
+		.with_plugin(RenderFlat2D::default())
+                .with_plugin(RenderDebugLines::default())
+                .with_plugin(RenderSkybox::with_colors(
+                    Srgb::new(0.82, 0.51, 0.50),
+                    Srgb::new(0.18, 0.11, 0.85),
+                )),
         )?;
 
     let mut game = Application::new(assets_dir, Load::new(), game_data)?;

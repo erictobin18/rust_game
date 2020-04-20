@@ -1,11 +1,12 @@
-use amethyst::core::{transform::Transform, ArcThreadPool};
+use amethyst::core::{transform::Transform, ArcThreadPool, Parent};
 use amethyst::ecs::Entity;
 use amethyst::Error;
 use amethyst::prelude::*;
 use amethyst::renderer::{
     Camera, ImageFormat, camera::Projection, SpriteRender, SpriteSheet,
     SpriteSheetFormat, sprite::SpriteSheetHandle, Texture,
-    debug_drawing::DebugLines, camera::ActiveCamera,
+    debug_drawing::DebugLines, camera::ActiveCamera, shape::Shape,
+    rendy::util::types::vertex::PosTex, Mesh,
 };
 use amethyst::derive::PrefabData;
 use amethyst::assets::{AssetStorage, Loader, Handle, PrefabData,
@@ -78,11 +79,14 @@ impl<'a, 'b> SimpleState for Load<'a, 'b> {
 	world.insert(physics_running);
 
         // Load the spritesheet necessary to render the graphics.
-        let sprite_sheet_handle = load_sprite_sheet(world);
-        println!("{:?}",sprite_sheet_handle);
+        let dot_sheet = load_sprite_sheet(world);
+//	let skybox_sheet = load_skybox(world);
+        println!("{:?}",dot_sheet);
+//	println!("{:?}",skybox_sheet);
         world.register::<KinematicComponent>();
-        initialize_asteroids(world, sprite_sheet_handle);        
+        initialize_asteroids(world, dot_sheet);        
         initialize_camera(world);
+//	initialize_skybox(world, skybox_sheet);
     }
 
     fn update(&mut self, data: &mut StateData<GameData>) -> SimpleTrans {
@@ -209,7 +213,7 @@ fn initialize_camera(world: &mut World) {
     world.insert(ActiveCamera {
 	entity: Some(camera),
     });
-    world.insert(DebugLines::new());    
+    world.insert(DebugLines::new());
 }
 
 fn initialize_asteroids(world: &mut World,
@@ -261,14 +265,33 @@ fn initialize_asteroids(world: &mut World,
         sprite_sheet: sprite_sheet_handle,
         sprite_number: 0, // paddle is the first sprite in the sprite_sheet
     };
+    
+    let mesh = {
+	let loader = world.read_resource::<Loader>();
+	let mesh_builder = Shape::Sphere(16, 16)
+	    .generate::<Vec<PosTex>>(None)
+	    .into();
+	let mesh_storage = world.read_resource::<AssetStorage<Mesh>>();
+	let progress = Some(ProgressCounter::default);
+	loader.load_from_data(mesh_builder, (), &mesh_storage)
+    };
 
     world
-        .create_entity()
-        .with(sprite_render.clone())
-        .with(ast_1_transform)
-        .with(ast_1_kinematic)
-        .with(ast_1_gravity)
-        .build();
+	.create_entity()
+	.with(ast_1_transform)
+	.with(ast_1_kinematic)
+	.with(ast_1_gravity)
+	.with(mesh.clone())
+	.build();
+
+    
+    // world
+    //     .create_entity()
+    //     .with(sprite_render.clone())
+    //     .with(ast_1_transform)
+    //     .with(ast_1_kinematic)
+    //     .with(ast_1_gravity)
+    //     .build();
 
     world
         .create_entity()
@@ -285,6 +308,7 @@ fn initialize_asteroids(world: &mut World,
         .with(ast_3_kinematic)
         .with(ast_3_gravity)
         .build();
+
 }
 
 fn load_sprite_sheet(world: &mut World) -> Handle<SpriteSheet> {
@@ -303,7 +327,8 @@ fn load_sprite_sheet(world: &mut World) -> Handle<SpriteSheet> {
     };
 
     let loader = world.read_resource::<Loader>();
-    let sprite_sheet_store = world.read_resource::<AssetStorage<SpriteSheet>>();
+    let sprite_sheet_store =
+	world.read_resource::<AssetStorage<SpriteSheet>>();
     loader.load(
         "texture/dot.ron", // Here we load the associated ron file
         SpriteSheetFormat(texture_handle),
@@ -311,6 +336,18 @@ fn load_sprite_sheet(world: &mut World) -> Handle<SpriteSheet> {
         &sprite_sheet_store,
     )
 }    
+
+// fn load_sphere(world: &mut World) {
+//     let mesh = {
+// 	let loader = world.read_resource::<Loader>();
+// 	let mesh_builder = Shape::Sphere(16, 16)
+// 	    .generate::<Vec<PosTex>>(None)
+// 	    .into();
+// 	let mesh_storage = world.read_resource::<AssetStorage<Mesh>>();
+// 	let progress = Some(ProgressCounter::default);
+// 	loader.load_from_data(mesh_builder, (), &mesh_storage)
+//     };    
+// }
 
 #[derive(Debug, Deserialize, Serialize, PrefabData)]
 pub struct Asteroid {

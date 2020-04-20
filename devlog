@@ -41,7 +41,14 @@ The current graphics are 2D like the pong example. The current task is to
 switch to 3D graphics with rendered shapes instead of sprites. I am primarly
 copying from the "rendy" example. This example uses a fly camera. I know the
 final game will not use a fly camera except for debug/admin/replay purposes,
-but I still would like to have it available. Currently, I have this working. The input bundle reads the bindings file, which lists some emulated axes using WASD and LShift and Space keys for moving the camera around. The FlyControl bundle automatically reads the mouse for pitch and yaw movement. Despite what the documentation says, setting it up this way actually does implement all the code necessary to create a working fly camera. As of now, there is no built-in way to control the roll of a fly camera. I created a forum post to complain about this.
+but I still would like to have it available. Currently, I have this
+working. The input bundle reads the bindings file, which lists some emulated
+axes using WASD and LShift and Space keys for moving the camera around. The
+FlyControl bundle automatically reads the mouse for pitch and yaw
+movement. Despite what the documentation says, setting it up this way actually
+does implement all the code necessary to create a working fly camera. As of
+now, there is no built-in way to control the roll of a fly camera. I created a
+forum post to complain about this.
 
 Next up is to get control of how the simulation looks. Here's a roadmap:
 1. I'd like to put in a nice skybox
@@ -56,5 +63,12 @@ Some longer-term goals unrelated to looks:
 - simple lasers/projectiles
 - simple map view
 
-Note: turn off most of the stuff rendered in the rendy example by commenting lines {[139-151], 309, [351-358], [389-397], [419-442], [448-545]}.
+Note: turn off most of the stuff rendered in the rendy example by commenting
+lines {[139-151], 309, [351-358], [389-397], [419-442], [448-545]}.
 
+4/19/20 cont.
+
+I downloaded a temporary skybox image to act as a placeholder until I've
+created a starry sky. I am not using Amethyst's builtin skybox because, as far
+as I can tell, it only allows skyboxes that are a simple color gradient, not
+images.
